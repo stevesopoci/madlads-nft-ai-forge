@@ -7,6 +7,8 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 
 export default function HomeScreen() {
@@ -30,29 +32,31 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mad Lads AI Forge</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Mad Lads ID"
-        keyboardType="numeric"
-        value={id}
-        onChangeText={setId}
-      />
-      <Button title="Fetch Mad Lad" onPress={fetchMadLad} />
-
-      {loading && <ActivityIndicator size="large" style={styles.loading} />}
-
-      {error !== "" && <Text style={styles.error}>{error}</Text>}
-
-      {imageUrl !== "" && (
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.image}
-          resizeMode="contain"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Mad Lads AI Forge</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Mad Lads ID"
+          keyboardType="numeric"
+          value={id}
+          onChangeText={setId}
         />
-      )}
-    </View>
+        <Button title="Fetch Mad Lad" onPress={fetchMadLad} />
+
+        {loading && <ActivityIndicator size="large" style={styles.loading} />}
+
+        {error !== "" && <Text style={styles.error}>{error}</Text>}
+
+        {imageUrl !== "" && (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
