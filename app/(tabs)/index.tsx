@@ -1,31 +1,141 @@
-import { StyleSheet } from 'react-native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const [id, setId] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-export default function TabOneScreen() {
+  const placeholderUri =
+    "https://cdn-icons-png.flaticon.com/512/11573/11573069.png";
+
+  useEffect(() => {
+    Image.prefetch(placeholderUri);
+  }, []);
+
+  useEffect(() => {
+    if (!id || isNaN(Number(id))) {
+      setLoading(false);
+      setImageUrl("");
+      setImageLoaded(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setImageLoaded(false);
+
+    const timeout = setTimeout(() => {
+      const url = `https://madlads.s3.us-west-2.amazonaws.com/images/${id}.png`;
+      setImageUrl(url);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [id]);
+
+  const isMadLadImage = imageUrl !== "" && imageLoaded;
+  const showUri = imageUrl !== "" ? imageUrl : placeholderUri;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Mad Lads AI Forge</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Mad Lads ID"
+          keyboardType="numeric"
+          value={id}
+          onChangeText={setId}
+        />
+
+        {loading && <ActivityIndicator size="large" style={styles.loading} />}
+        {error !== "" && <Text style={styles.error}>{error}</Text>}
+
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: showUri }}
+            style={[
+              styles.imageBase,
+              !imageUrl
+                ? styles.placeholderImage
+                : isMadLadImage
+                ? styles.realImage
+                : styles.realImageLoading,
+            ]}
+            resizeMode="contain"
+            onLoadEnd={() => {
+              setLoading(false);
+              setImageLoaded(true);
+            }}
+          />
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 80,
+    paddingHorizontal: 20,
+    backgroundColor: "#000",
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    color: "#fff",
+    marginBottom: 20,
+    fontWeight: "600",
+    textAlign: "center",
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  input: {
+    backgroundColor: "#1c1c1e",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 24,
+  },
+  loading: {
+    marginTop: 20,
+  },
+  error: {
+    marginTop: 10,
+    color: "red",
+    textAlign: "center",
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  imageBase: {
+    width: "100%",
+    height: 300,
+  },
+  placeholderImage: {
+    width: 150,
+    height: 150,
+    tintColor: "#888",
+  },
+  realImage: {
+    borderRadius: 12,
+    opacity: 1,
+  },
+  realImageLoading: {
+    borderRadius: 12,
+    opacity: 0,
   },
 });
