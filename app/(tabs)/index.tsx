@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -16,20 +16,26 @@ export default function HomeScreen() {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const fetchMadLad = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      // TODO: Upgrade to fetch on-chain metadata via Helium API
+  useEffect(() => {
+    if (!id || isNaN(Number(id))) {
+      setLoading(false);
+      setImageUrl("");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setImageLoaded(false);
+
+    const timeout = setTimeout(() => {
       const url = `https://madlads.s3.us-west-2.amazonaws.com/images/${id}.png`;
       setImageUrl(url);
-    } catch (err) {
-      setError("Failed to fetch NFT.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [id]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -42,7 +48,6 @@ export default function HomeScreen() {
           value={id}
           onChangeText={setId}
         />
-        <Button title="Fetch Mad Lad" onPress={fetchMadLad} />
 
         {loading && <ActivityIndicator size="large" style={styles.loading} />}
 
@@ -53,6 +58,7 @@ export default function HomeScreen() {
             source={{ uri: imageUrl }}
             style={styles.image}
             resizeMode="contain"
+            onLoadEnd={() => setLoading(false)}
           />
         )}
       </View>
