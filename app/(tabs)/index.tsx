@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Image,
   StyleSheet,
   ActivityIndicator,
@@ -12,10 +11,13 @@ import {
 } from "react-native";
 
 export default function HomeScreen() {
-  const [id, setId] = useState("1");
+  const [id, setId] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const defaultImage =
+    "https://madlads.s3.us-west-2.amazonaws.com/images/1.png";
+  const imageToShow = imageUrl !== "" ? imageUrl : defaultImage;
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
@@ -53,14 +55,12 @@ export default function HomeScreen() {
 
         {error !== "" && <Text style={styles.error}>{error}</Text>}
 
-        {imageUrl !== "" && (
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.image}
-            resizeMode="contain"
-            onLoadEnd={() => setLoading(false)}
-          />
-        )}
+        <Image
+          source={{ uri: imageToShow }}
+          style={styles.image}
+          resizeMode="contain"
+          onLoadEnd={() => setLoading(false)}
+        />
       </View>
     </TouchableWithoutFeedback>
   );
