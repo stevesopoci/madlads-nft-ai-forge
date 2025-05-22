@@ -16,6 +16,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [prompt, setPrompt] = useState("");
 
   const placeholderUri =
     "https://cdn-icons-png.flaticon.com/512/11573/11573069.png";
@@ -52,13 +53,23 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>Mad Lads AI Forge</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Mad Lads ID"
-          keyboardType="numeric"
-          value={id}
-          onChangeText={setId}
-        />
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.idInput}
+            placeholder="ID"
+            keyboardType="numeric"
+            value={id}
+            onChangeText={setId}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.promptInput}
+            placeholder="Forge your lad (e.g., laser eyes, pepe hat)"
+            placeholderTextColor="#888"
+            value={prompt}
+            onChangeText={setPrompt}
+          />
+        </View>
 
         {loading && <ActivityIndicator size="large" style={styles.loading} />}
         {error !== "" && <Text style={styles.error}>{error}</Text>}
@@ -89,7 +100,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: 60,
     paddingHorizontal: 20,
     backgroundColor: "#000",
   },
@@ -100,12 +111,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
-  input: {
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 24,
+  },
+  idInput: {
+    flex: 0.6,
     backgroundColor: "#1c1c1e",
     color: "#fff",
     padding: 12,
     borderRadius: 10,
-    marginBottom: 24,
+    textAlign: "center",
+  },
+  promptInput: {
+    flex: 4.4,
+    backgroundColor: "#1c1c1e",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 10,
   },
   loading: {
     marginTop: 20,
@@ -116,10 +141,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   imageContainer: {
-    flex: 1,
-    justifyContent: "flex-start",
+    flexGrow: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    paddingBottom: 100,
   },
   imageBase: {
     width: "100%",
@@ -131,11 +156,11 @@ const styles = StyleSheet.create({
     tintColor: "#888",
   },
   realImage: {
-    borderRadius: 12,
+    borderRadius: 0,
     opacity: 1,
   },
   realImageLoading: {
-    borderRadius: 12,
+    borderRadius: 0,
     opacity: 0,
   },
 });
