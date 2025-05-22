@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,15 +15,20 @@ export default function HomeScreen() {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const defaultImage =
-    "https://madlads.s3.us-west-2.amazonaws.com/images/1.png";
-  const imageToShow = imageUrl !== "" ? imageUrl : defaultImage;
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  const placeholderUri =
+    "https://cdn-icons-png.flaticon.com/512/11573/11573069.png";
+
+  useEffect(() => {
+    Image.prefetch(placeholderUri);
+  }, []);
 
   useEffect(() => {
     if (!id || isNaN(Number(id))) {
       setLoading(false);
       setImageUrl("");
+      setImageLoaded(false);
       return;
     }
 
@@ -39,10 +44,14 @@ export default function HomeScreen() {
     return () => clearTimeout(timeout);
   }, [id]);
 
+  const isMadLadImage = imageUrl !== "" && imageLoaded;
+  const showUri = imageUrl !== "" ? imageUrl : placeholderUri;
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <Text style={styles.title}>Mad Lads AI Forge</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Enter Mad Lads ID"
@@ -52,15 +61,26 @@ export default function HomeScreen() {
         />
 
         {loading && <ActivityIndicator size="large" style={styles.loading} />}
-
         {error !== "" && <Text style={styles.error}>{error}</Text>}
 
-        <Image
-          source={{ uri: imageToShow }}
-          style={styles.image}
-          resizeMode="contain"
-          onLoadEnd={() => setLoading(false)}
-        />
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: showUri }}
+            style={[
+              styles.imageBase,
+              !imageUrl
+                ? styles.placeholderImage
+                : isMadLadImage
+                ? styles.realImage
+                : styles.realImageLoading,
+            ]}
+            resizeMode="contain"
+            onLoadEnd={() => {
+              setLoading(false);
+              setImageLoaded(true);
+            }}
+          />
+        </View>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -71,7 +91,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
-    backgroundColor: "#000", // basic dark theme
+    backgroundColor: "#000",
   },
   title: {
     fontSize: 24,
@@ -85,13 +105,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     padding: 12,
     borderRadius: 10,
-    marginBottom: 12,
-  },
-  image: {
-    marginTop: 20,
-    width: "100%",
-    height: 300,
-    borderRadius: 12,
+    marginBottom: 24,
   },
   loading: {
     marginTop: 20,
@@ -99,5 +113,29 @@ const styles = StyleSheet.create({
   error: {
     marginTop: 10,
     color: "red",
+    textAlign: "center",
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  imageBase: {
+    width: "100%",
+    height: 300,
+  },
+  placeholderImage: {
+    width: 150,
+    height: 150,
+    tintColor: "#888",
+  },
+  realImage: {
+    borderRadius: 12,
+    opacity: 1,
+  },
+  realImageLoading: {
+    borderRadius: 12,
+    opacity: 0,
   },
 });
