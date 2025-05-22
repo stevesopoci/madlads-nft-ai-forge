@@ -1,14 +1,57 @@
-import { StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const [id, setId] = useState("1");
+  const [imageUrl, setImageUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-export default function TabOneScreen() {
+  const fetchMadLad = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      // TODO: Upgrade to fetch on-chain metadata via Helium API
+      const url = `https://madlads.s3.us-west-2.amazonaws.com/images/${id}.png`;
+      setImageUrl(url);
+    } catch (err) {
+      setError("Failed to fetch NFT.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Mad Lads AI Forge</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter Mad Lads ID"
+        keyboardType="numeric"
+        value={id}
+        onChangeText={setId}
+      />
+      <Button title="Fetch Mad Lad" onPress={fetchMadLad} />
+
+      {loading && <ActivityIndicator size="large" style={styles.loading} />}
+
+      {error !== "" && <Text style={styles.error}>{error}</Text>}
+
+      {imageUrl !== "" && (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      )}
     </View>
   );
 }
@@ -16,16 +59,35 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 80,
+    paddingHorizontal: 20,
+    backgroundColor: "#000", // basic dark theme
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    color: "#fff",
+    marginBottom: 20,
+    fontWeight: "600",
+    textAlign: "center",
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  input: {
+    backgroundColor: "#1c1c1e",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  image: {
+    marginTop: 20,
+    width: "100%",
+    height: 300,
+    borderRadius: 12,
+  },
+  loading: {
+    marginTop: 20,
+  },
+  error: {
+    marginTop: 10,
+    color: "red",
   },
 });
