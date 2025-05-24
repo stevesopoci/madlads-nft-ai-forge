@@ -1,14 +1,26 @@
+/**
+ * HomeScreen Component
+ * ---------------------
+ * This screen allows users to:
+ * - Enter a MadLad NFT ID and optional prompt
+ * - View the corresponding image fetched from S3
+ * - Trigger video generation using the selected AI model
+ * - View the returned video once complete
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   Image,
-  StyleSheet,
   ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import { Video, ResizeMode } from "expo-av";
+import styles from "../styles/index.styles";
+import generateVideo from "../utils/generateVideo";
 
 export default function HomeScreen() {
   const [id, setId] = useState("");
@@ -17,9 +29,13 @@ export default function HomeScreen() {
   const [error, setError] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   const placeholderUri =
     "https://cdn-icons-png.flaticon.com/512/11573/11573069.png";
+
+  const isMadLadImage = imageUrl !== "" && imageLoaded;
+  const showUri = imageUrl !== "" ? imageUrl : placeholderUri;
 
   useEffect(() => {
     Image.prefetch(placeholderUri);
@@ -36,6 +52,7 @@ export default function HomeScreen() {
     setLoading(true);
     setError("");
     setImageLoaded(false);
+    setVideoUrl("");
 
     const timeout = setTimeout(() => {
       const url = `https://madlads.s3.us-west-2.amazonaws.com/images/${id}.png`;
@@ -45,8 +62,15 @@ export default function HomeScreen() {
     return () => clearTimeout(timeout);
   }, [id]);
 
-  const isMadLadImage = imageUrl !== "" && imageLoaded;
-  const showUri = imageUrl !== "" ? imageUrl : placeholderUri;
+  const handleGenerateVideo = () => {
+    generateVideo({
+      id,
+      prompt,
+      setLoading,
+      setError,
+      setVideoUrl,
+    });
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -68,99 +92,54 @@ export default function HomeScreen() {
             placeholderTextColor="#888"
             value={prompt}
             onChangeText={setPrompt}
+            onSubmitEditing={handleGenerateVideo}
+            returnKeyType="done"
           />
         </View>
 
-        {loading && <ActivityIndicator size="large" style={styles.loading} />}
-        {error !== "" && <Text style={styles.error}>{error}</Text>}
+        <View style={styles.mediaWrapper}>
+          {loading && (
+            <ActivityIndicator
+              size="large"
+              color="#fff"
+              style={styles.loadingOverlay}
+            />
+          )}
 
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: showUri }}
-            style={[
-              styles.imageBase,
-              !imageUrl
-                ? styles.placeholderImage
-                : isMadLadImage
-                ? styles.realImage
-                : styles.realImageLoading,
-            ]}
-            resizeMode="contain"
-            onLoadEnd={() => {
-              setLoading(false);
-              setImageLoaded(true);
-            }}
-          />
+          {error !== "" && <Text style={styles.error}>{error}</Text>}
+
+          {videoUrl ? (
+            <Video
+              source={{ uri: videoUrl }}
+              rate={1.0}
+              volume={1.0}
+              isMuted={false}
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay
+              isLooping={true}
+              useNativeControls
+              style={styles.video}
+            />
+          ) : (
+            <Image
+              source={{ uri: showUri }}
+              style={[
+                styles.imageBase,
+                !imageUrl
+                  ? styles.placeholderImage
+                  : isMadLadImage
+                  ? styles.realImage
+                  : styles.realImageLoading,
+              ]}
+              resizeMode="contain"
+              onLoadEnd={() => {
+                setLoading(false);
+                setImageLoaded(true);
+              }}
+            />
+          )}
         </View>
       </View>
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    backgroundColor: "#000",
-  },
-  title: {
-    fontSize: 24,
-    color: "#fff",
-    marginBottom: 20,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 24,
-  },
-  idInput: {
-    flex: 0.6,
-    backgroundColor: "#1c1c1e",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    textAlign: "center",
-  },
-  promptInput: {
-    flex: 4.4,
-    backgroundColor: "#1c1c1e",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 10,
-  },
-  loading: {
-    marginTop: 20,
-  },
-  error: {
-    marginTop: 10,
-    color: "red",
-    textAlign: "center",
-  },
-  imageContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingBottom: 100,
-  },
-  imageBase: {
-    width: "100%",
-    height: 300,
-  },
-  placeholderImage: {
-    width: 150,
-    height: 150,
-    tintColor: "#888",
-  },
-  realImage: {
-    borderRadius: 0,
-    opacity: 1,
-  },
-  realImageLoading: {
-    borderRadius: 0,
-    opacity: 0,
-  },
-});
