@@ -2,6 +2,8 @@
 
 An AI-powered mobile app built with React Native + Expo that brings your favorite [**Mad Lads**](https://www.tensor.trade/trade/madlads) to life through text-to-video & image-to-video generation using [Replicate's](https://replicate.com/) cutting-edge models.
 
+![MadLadsAIForgeDemo](https://github.com/user-attachments/assets/15cf860a-bc42-4a40-996c-b928ad72ea4f)
+
 ---
 
 ## ✨ Features
